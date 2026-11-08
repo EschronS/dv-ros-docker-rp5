@@ -1,0 +1,61 @@
+--- a/usr/include/dv-processing/io/camera/camera_input_base.hpp
++++ b/usr/include/dv-processing/io/camera/camera_input_base.hpp
+@@ -5,6 +5,8 @@
+ #include "imu_support.hpp"
+ #include "parsers/parser.hpp"
+ 
++#include <cstdio>
++
+ #include <boost/circular_buffer.hpp>
+ 
+ namespace dv::io::camera {
+@@ -294,29 +296,45 @@
+ 
+ 		uint64_t mPacketCount{0};
+ 
+-		SortedPackets<dv::EventPacket> mEvents{};
+-		SortedPackets<dv::Frame> mFrames{};
+-		SortedPackets<dv::IMUPacket> mImu{};
+-		SortedPackets<dv::TriggerPacket> mTriggers{};
++		SortedPackets<dv::EventPacket, 1024> mEvents{};
++		SortedPackets<dv::Frame, 1024> mFrames{};
++		SortedPackets<dv::IMUPacket, 1024> mImu{};
++		SortedPackets<dv::TriggerPacket, 1024> mTriggers{};
+ 
+ 		void acceptData(parser::ParsedData data) {
+ 			std::scoped_lock lock{mDataLock};
+ 
+ 			if (!data.events.elements.empty()) {
++				if (mEvents.mData.full()) {
++					fprintf(stderr, "[dv] EVENT BUFFER FULL cap=%zu dropping %zu events\n", mEvents.mData.capacity(),
++						data.events.elements.size());
++				}
+ 				mEvents.mData.push_back(std::make_pair(mPacketCount++, std::move(data.events)));
+ 			}
+ 
+ 			if (!data.frames.empty()) {
++				if (mFrames.mData.full()) {
++					fprintf(stderr, "[dv] FRAME BUFFER FULL cap=%zu dropping %zu frames\n", mFrames.mData.capacity(),
++						data.frames.size());
++				}
+ 				for (auto &frame : data.frames) {
+ 					mFrames.mData.push_back(std::make_pair(mPacketCount++, std::move(frame)));
+ 				}
+ 			}
+ 
+ 			if (!data.imu.elements.empty()) {
++				if (mImu.mData.full()) {
++					fprintf(stderr, "[dv] IMU BUFFER FULL cap=%zu dropping %zu datapoints\n", mImu.mData.capacity(),
++						data.imu.elements.size());
++				}
+ 				mImu.mData.push_back(std::make_pair(mPacketCount++, std::move(data.imu)));
+ 			}
+ 
+ 			if (!data.triggers.elements.empty()) {
++				if (mTriggers.mData.full()) {
++					fprintf(stderr, "[dv] TRIGGER BUFFER FULL cap=%zu dropping %zu triggers\n", mTriggers.mData.capacity(),
++						data.triggers.elements.size());
++				}
+ 				mTriggers.mData.push_back(std::make_pair(mPacketCount++, std::move(data.triggers)));
+ 			}
+ 		}

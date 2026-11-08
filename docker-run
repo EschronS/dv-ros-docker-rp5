@@ -1,0 +1,33 @@
+xhost +local:docker
+docker run --rm -it \
+  --env DISPLAY=$DISPLAY \
+  --env QT_X11_NO_MITSHM=1 \
+  -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+  -v /dev/dri:/dev/dri \
+  --privileged \
+  --cpus="3.5" \
+  --cpu-quota=-1 \
+  --cpu-shares=4096 \
+  --cap-add=SYS_NICE \
+  --network host \
+  -v /dev/bus/usb:/dev/bus/usb \
+  -v /home/$USER/event_ws:/home/$USER/event_ws \
+  -v /home/$USER/.cache/clangd:/home/$USER/.cache/clangd \
+  --group-add $(getent group plugdev | cut -d: -f3) \
+  --name dv-ros \
+  dv-ros-mnt
+
+
+docker run --rm -it \
+  --privileged \
+  --cpus="3.5" \
+  --cpu-quota=-1 \
+  --cpu-shares=4096 \
+  --cap-add=SYS_NICE \
+  --network host \
+  -v /dev/bus/usb:/dev/bus/usb \
+  -v /home/$USER/event_ws:/home/$USER/event_ws \
+  -v /home/$USER/.cache/clangd:/home/$USER/.cache/clangd \
+  --group-add $(getent group plugdev | cut -d: -f3) \
+  --name dv-ros \
+  dv-ros-mnt
