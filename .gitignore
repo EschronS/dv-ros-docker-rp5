@@ -1,0 +1,33 @@
+# Local environment / personal overrides
+.env
+.env.*
+*.local
+docker-run.local
+docker-build.local
+
+# Event camera / ROS capture outputs
+*.bag
+*.bag.active
+*.aedat
+*.aedat4
+*.csv
+*.raw
+*.mcap
+*.db3
+
+# Logs and runtime artifacts
+*.log
+logs/
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
